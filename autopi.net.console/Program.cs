@@ -12,10 +12,6 @@ namespace autopi.net.console
     {
         static async Task Main(string[] args)
         {
-            var hello = new autopi.net.core.HelloWorld();
-            Console.WriteLine(hello.SayHello());
-
-
             var startup = new Startup();
             await startup.Initialize();
 

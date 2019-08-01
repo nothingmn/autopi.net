@@ -4,6 +4,7 @@ using autopi.net.core;
 using autopi.net.core.auth;
 using autopi.net.core.dongle;
 using autopi.net.core.logbook;
+using autopi.net.core.Models;
 using Newtonsoft.Json;
 
 namespace autopi.net.console

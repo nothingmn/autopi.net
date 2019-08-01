@@ -17,7 +17,7 @@ namespace autopi.net.core.logbook
         {
             var result = await httpClient.GetAsync("/logbook/trips/?device=" + device.ToString());
             var content = await result.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content); //as LoginResponse;
+            return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
 
 
         }

@@ -18,7 +18,7 @@ namespace autopi.net.core.dongle
             if (!string.IsNullOrEmpty(ordering)) append = "?ordering=" + ordering;
             var result = await httpClient.GetAsync("/dongle/devices/" + append);
             var content = await result.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<IReadOnlyCollection<GetDongleResponse>>(content); //as LoginResponse;
+            return JsonConvert.DeserializeObject<IReadOnlyCollection<GetDongleResponse>>(content);
 
 
         }

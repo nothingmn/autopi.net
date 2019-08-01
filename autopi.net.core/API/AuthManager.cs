@@ -8,14 +8,14 @@ using Afk.ZoneInfo;
 using System.Net.Http.Headers;
 using autopi.net.core.Models;
 
-namespace autopi.net.core.auth
+namespace autopi.net.core.auth.API
 {
-    public class LoginManager
+    public class AuthManager
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
 
-        public LoginManager(HttpClient httpClient, ILogger logger)
+        public AuthManager(HttpClient httpClient, ILogger logger)
         {
             this._httpClient = httpClient;
             this._logger = logger;

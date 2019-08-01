@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using autopi.net.core;
+using autopi.net.core.API;
 using autopi.net.core.auth;
-using autopi.net.core.dongle;
-using autopi.net.core.logbook;
+using autopi.net.core.auth.API;
 using autopi.net.core.Models;
 using Newtonsoft.Json;
 
@@ -29,7 +29,7 @@ namespace autopi.net.console
             {
 
             }
-            var auth = new autopi.net.core.auth.LoginManager(AutoPiApiClient.Client, startup.Logger);
+            var auth = new AuthManager(AutoPiApiClient.Client, startup.Logger);
             var loginResult = await auth.CreateLogin(credentials);
 
             if (loginResult != null && !string.IsNullOrEmpty(loginResult.Token))
@@ -45,7 +45,7 @@ namespace autopi.net.console
                     Console.WriteLine("No dongles found.");
                     return;
                 }
-                var tripsManager = new TripsManager(AutoPiApiClient.Client, startup.Logger);
+                var tripsManager = new LogBookManager(AutoPiApiClient.Client, startup.Logger);
                 foreach (var dongle in dongles)
                 {
 

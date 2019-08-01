@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 using autopi.net.core.Models;
 using Newtonsoft.Json;
 
-namespace autopi.net.core.logbook
+namespace autopi.net.core.API
 {
-    public class TripsManager
+    public class LogBookManager
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
 
-        public TripsManager(HttpClient httpClient, ILogger logger)
+        public LogBookManager(HttpClient httpClient, ILogger logger)
         {
             this._httpClient = httpClient;
             this._logger = logger;

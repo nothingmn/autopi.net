@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using autopi.net.core.auth;
 using autopi.net.core.Models;
 using Newtonsoft.Json;
 
-namespace autopi.net.core.dongle
+namespace autopi.net.core.API
 {
     public class DongleManager
     {

@@ -11,12 +11,21 @@ namespace autopi.net.core.logbook
 {
     public class TripsManager
     {
-        private readonly HttpClient httpClient = AutoPiApiClient.Client;
+        private readonly HttpClient _httpClient;
+        private readonly ILogger _logger;
+
+        public TripsManager(HttpClient httpClient, ILogger logger)
+        {
+            this._httpClient = httpClient;
+            this._logger = logger;
+        }
 
         public async Task<IReadOnlyCollection<GetTripsResponse>> GetTrips(System.Guid device, string ordering = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await httpClient.GetAsync("/logbook/trips/?device=" + device.ToString());
+            var result = await _httpClient.GetAsync("/logbook/trips/?device=" + device.ToString());
             var content = await result.Content.ReadAsStringAsync();
+            _logger.Info("Get Trips API Response:{0}", content);
+
             return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
 
 

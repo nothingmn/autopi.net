@@ -28,7 +28,7 @@ namespace autopi.net.console
             {
 
             }
-            var auth = new autopi.net.core.auth.LoginManager();
+            var auth = new autopi.net.core.auth.LoginManager(AutoPiApiClient.Client, startup.Logger);
             var loginResult = await auth.CreateLogin(credentials);
 
             if (loginResult != null && !string.IsNullOrEmpty(loginResult.Token))
@@ -36,7 +36,7 @@ namespace autopi.net.console
                 Console.WriteLine("Login successfull!");
                 Console.WriteLine("Attempting to retreive the list of dongles");
 
-                var dm = new DongleManager();
+                var dm = new DongleManager(AutoPiApiClient.Client, startup.Logger);
                 var dongles = await dm.GetDongleDevices();
 
                 if (dongles == null)
@@ -44,7 +44,7 @@ namespace autopi.net.console
                     Console.WriteLine("No dongles found.");
                     return;
                 }
-                var tripsManager = new TripsManager();
+                var tripsManager = new TripsManager(AutoPiApiClient.Client, startup.Logger);
                 foreach (var dongle in dongles)
                 {
 

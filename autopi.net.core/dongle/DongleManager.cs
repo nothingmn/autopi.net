@@ -10,14 +10,24 @@ namespace autopi.net.core.dongle
 {
     public class DongleManager
     {
-        private readonly HttpClient httpClient = AutoPiApiClient.Client;
+        private readonly HttpClient _httpClient;
+
+        private readonly ILogger _logger;
+
+        public DongleManager(HttpClient httpClient, ILogger logger)
+        {
+            this._httpClient = httpClient;
+            this._logger = logger;
+        }
 
         public async Task<IReadOnlyCollection<GetDongleResponse>> GetDongleDevices(string ordering = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             var append = "";
             if (!string.IsNullOrEmpty(ordering)) append = "?ordering=" + ordering;
-            var result = await httpClient.GetAsync("/dongle/devices/" + append);
+            var result = await _httpClient.GetAsync("/dongle/devices/" + append);
             var content = await result.Content.ReadAsStringAsync();
+            _logger.Info("Get Dongles API Response:{0}", content);
+
             return JsonConvert.DeserializeObject<IReadOnlyCollection<GetDongleResponse>>(content);
 
 

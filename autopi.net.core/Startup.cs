@@ -20,7 +20,9 @@ namespace autopi.net.core
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
 
+            Logger = new Logger();
             return Task.CompletedTask;
         }
+        public ILogger Logger { get; private set; }
     }
 }

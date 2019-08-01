@@ -1,0 +1,1 @@
+A basic C# .NET Class Library Client for the AutoPi API found at https://api.autopi.io/

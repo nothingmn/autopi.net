@@ -5,6 +5,7 @@ using autopi.net.core.API;
 using autopi.net.core.auth;
 using autopi.net.core.auth.API;
 using autopi.net.core.Models;
+using autopi.net.core.storage;
 using Newtonsoft.Json;
 
 namespace autopi.net.console
@@ -15,6 +16,10 @@ namespace autopi.net.console
         {
             var startup = new Startup();
             await startup.Initialize();
+
+            var metaDataStorage = new DiskMetaDataStore() as IMetaDataStore;
+            await metaDataStorage.Initialize();
+
 
             Credentials credentials = null;
             try
@@ -35,6 +40,15 @@ namespace autopi.net.console
             if (loginResult != null && !string.IsNullOrEmpty(loginResult.Token))
             {
                 Console.WriteLine("Login successfull!");
+                var logBookManager = new LogBookManager(AutoPiApiClient.Client, startup.Logger);
+
+                Console.WriteLine("Attempting to retreive the list logbook fields");
+                var fields = await logBookManager.GetStorageFields();
+                foreach (var field in fields)
+                {
+                    Console.WriteLine("{1} - {0}", field.Field, field.Type);
+                }
+
                 Console.WriteLine("Attempting to retreive the list of dongles");
 
                 var dm = new DongleManager(AutoPiApiClient.Client, startup.Logger);
@@ -45,7 +59,6 @@ namespace autopi.net.console
                     Console.WriteLine("No dongles found.");
                     return;
                 }
-                var tripsManager = new LogBookManager(AutoPiApiClient.Client, startup.Logger);
                 foreach (var dongle in dongles)
                 {
 
@@ -55,7 +68,7 @@ namespace autopi.net.console
                         Console.WriteLine("\tVehicle Call Name:{0}, Vin:{1}", dongle.Vehicle.CallName, dongle.Vehicle.Vin);
                     }
                     Console.WriteLine("Attempting to retreive the list of trips");
-                    var trips = await tripsManager.GetTrips(dongle.Id);
+                    var trips = await logBookManager.GetTrips(dongle.Id);
                     if (trips == null)
                     {
                         Console.WriteLine("No trips were found for this device.");
@@ -64,8 +77,16 @@ namespace autopi.net.console
                     foreach (var trip in trips)
                     {
                         Console.WriteLine("\t\tStart:{2} at {0}, End:{3} at {1}, Distance (km):{4:0.0}, Duration:{5}", trip.StartTimeUtc, trip.EndTimeUtc, trip.StartDisplay, trip.EndDisplay, trip.DistanceKm, trip.DurationTS);
+
                     }
+
+                    //var readFuelLevel = await logBookManager.GetStorageRead(dongle.Id, DateTime.Now.AddHours(-24), field: "obd.fuel_level.value");
+                    //var raw = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24));
+                    //var position = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24), field: "track.pos.loc");
+
                 }
+
+
 
             }
         }

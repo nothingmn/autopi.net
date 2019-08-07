@@ -110,6 +110,7 @@ namespace autopi.net.console
                                     if (fenceService.PolyContainsPoint(fence, point.Location))
                                     {
                                         Console.WriteLine("Geofence triggered: Where:{0} (From:{1} To:{2})", fence.Name, trip.StartDisplay, trip.EndDisplay);
+                                        await metaDataStorage.TagEntity(trip.Id, fence.Name);
                                     }
                                 }
                             }

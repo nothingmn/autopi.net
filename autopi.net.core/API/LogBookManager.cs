@@ -76,6 +76,20 @@ namespace autopi.net.core.API
             return JsonConvert.DeserializeObject<IReadOnlyCollection<StorageField>>(content);
         }
 
+
+        public async Task<IReadOnlyCollection<StorageDataResponse>> GetStorageData(Guid deviceId, DateTimeOffset? start = null, DateTimeOffset? end = null, string type = "position", string key = "position", CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null || start >= DateTimeOffset.UtcNow) start = DateTimeOffset.UtcNow.AddDays(-1);
+            if (end == null || end >= DateTimeOffset.UtcNow) end = DateTimeOffset.UtcNow;
+
+            var result = await _httpClient.GetAsync(
+                string.Format("/logbook/storage/data/?type={0}&key={1}&device_id={2}&start_utc={3}&end_utc={4}", type, key, deviceId, start, end)
+            );
+            var content = await result.Content.ReadAsStringAsync();
+            _logger.Info("Get LogBook Storage Data API Response:{0}", content);
+            return JsonConvert.DeserializeObject<IReadOnlyCollection<StorageDataResponse>>(content);
+        }
+
     }
     public enum AutoPiEvents
     {

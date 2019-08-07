@@ -5,7 +5,7 @@ using autopi.net.core.API;
 using autopi.net.core.auth;
 using autopi.net.core.auth.API;
 using autopi.net.core.Models;
-using autopi.net.core.storage;
+using autopi.net.core.tags;
 using Newtonsoft.Json;
 
 namespace autopi.net.console
@@ -16,9 +16,8 @@ namespace autopi.net.console
         {
             var startup = new Startup();
             await startup.Initialize();
-
-            var metaDataStorage = new DiskMetaDataStore() as IMetaDataStore;
-            await metaDataStorage.Initialize();
+            var metaDataStorage = startup.MetaDataStorage;
+            var logger = startup.Logger;
 
 
             Credentials credentials = null;
@@ -34,13 +33,13 @@ namespace autopi.net.console
             {
 
             }
-            var auth = new AuthManager(AutoPiApiClient.Client, startup.Logger);
+            var auth = new AuthManager(AutoPiApiClient.Client, logger);
             var loginResult = await auth.CreateLogin(credentials);
 
             if (loginResult != null && !string.IsNullOrEmpty(loginResult.Token))
             {
                 Console.WriteLine("Login successfull!");
-                var logBookManager = new LogBookManager(AutoPiApiClient.Client, startup.Logger);
+                var logBookManager = new LogBookManager(AutoPiApiClient.Client, logger);
 
                 Console.WriteLine("Attempting to retreive the list logbook fields");
                 var fields = await logBookManager.GetStorageFields();
@@ -51,7 +50,8 @@ namespace autopi.net.console
 
                 Console.WriteLine("Attempting to retreive the list of dongles");
 
-                var dm = new DongleManager(AutoPiApiClient.Client, startup.Logger);
+                var dm = new DongleManager(AutoPiApiClient.Client, logger);
+
                 var dongles = await dm.GetDongleDevices();
 
                 if (dongles == null)
@@ -77,6 +77,13 @@ namespace autopi.net.console
                     foreach (var trip in trips)
                     {
                         Console.WriteLine("\t\tStart:{2} at {0}, End:{3} at {1}, Distance (km):{4:0.0}, Duration:{5}", trip.StartTimeUtc, trip.EndTimeUtc, trip.StartDisplay, trip.EndDisplay, trip.DistanceKm, trip.DurationTS);
+                        var tags = await metaDataStorage.GetTagsForEntity(trip.Id);
+                        if (tags != null)
+                        {
+                            Console.WriteLine("\t\t\tTags:{0}", string.Join(',', tags));
+                        }
+
+                        var tripDataPoints = await logBookManager.GetStorageData(dongle.Id, trip.StartTimeUtc, trip.EndTimeUtc);
 
                     }
 

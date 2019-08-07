@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace autopi.net.core.storage
+namespace autopi.net.core.tags
 {
     public class DiskMetaDataStore : IMetaDataStore
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace autopi.net.core.storage
+namespace autopi.net.core.tags
 {
     //A generic method to store meta data in autopi entities
     //BYOD - bring your own driver...

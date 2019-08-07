@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace autopi.net.core.Models
@@ -19,5 +20,13 @@ namespace autopi.net.core.Models
 
         [JsonProperty("lon")]
         public double Lon { get; set; }
+
+
+    }
+
+    public partial class Boundary
+    {
+        public List<Location> Bounds { get; set; }
+        public string Name { get; set; }
     }
 }

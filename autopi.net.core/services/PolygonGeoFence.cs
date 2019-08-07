@@ -8,15 +8,15 @@ namespace autopi.net.core.services
     public class PolygonGeoFence
     {
 
-        public bool PolyContainsPoint(List<Location> points, Location p)
+        public bool PolyContainsPoint(Boundary boundary, Location p)
         {
             bool inside = false;
 
             // An imaginary closing segment is implied,
             // so begin testing with that.
-            var v1 = points[points.Count - 1];
+            var v1 = boundary.Bounds[boundary.Bounds.Count - 1];
 
-            foreach (var v0 in points)
+            foreach (var v0 in boundary.Bounds)
             {
                 double d1 = (p.Lon - v0.Lon) * (v1.Lat - v0.Lat);
                 double d2 = (p.Lat - v0.Lat) * (v1.Lon - v0.Lon);

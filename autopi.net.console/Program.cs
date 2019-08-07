@@ -16,7 +16,8 @@ namespace autopi.net.console
     {
         static async Task Main(string[] args)
         {
-            TestPoly();
+            var geoFences = TestPoly();
+            var fenceService = new PolygonGeoFence();
             var startup = new Startup();
             await startup.Initialize();
             var metaDataStorage = startup.MetaDataStorage;
@@ -100,6 +101,19 @@ namespace autopi.net.console
                         }
 
                         var tripDataPoints = await logBookManager.GetStorageData(dongle.Id, trip.StartTimeUtc, trip.EndTimeUtc);
+                        if (tripDataPoints != null)
+                        {
+                            foreach (var point in tripDataPoints)
+                            {
+                                foreach (var fence in geoFences)
+                                {
+                                    if (fenceService.PolyContainsPoint(fence, point.Location))
+                                    {
+                                        Console.WriteLine("Geofence triggered: Where:{0} (From:{1} To:{2})", fence.Name, trip.StartDisplay, trip.EndDisplay);
+                                    }
+                                }
+                            }
+                        }
 
                     }
 
@@ -113,13 +127,16 @@ namespace autopi.net.console
 
             }
         }
-        static void TestPoly()
+        static IReadOnlyCollection<Boundary> TestPoly()
         {
-            var fence = new List<Location>() {
+            var fence = new Boundary()
+            {
+                Bounds = new List<Location>() {
                 new Location { Lat = 0, Lon = 0},
                 new Location { Lat = 10, Lon = 0},
                 new Location { Lat = 10, Lon = 10},
                 new Location { Lat = 0, Lon = 10},
+            }
             };
             var pointInFence = new core.Models.Location() { Lat = 5, Lon = 5 };
             var pointOutOfFence = new Location() { Lat = 50, Lon = 5 };
@@ -127,6 +144,23 @@ namespace autopi.net.console
             var geofenceService = new PolygonGeoFence();
             var contains = geofenceService.PolyContainsPoint(fence, pointInFence);
             var NotContains = geofenceService.PolyContainsPoint(fence, pointOutOfFence);
+
+
+            try
+            {
+                IReadOnlyCollection<Boundary> geoFences = null;
+                var geoFenceFile = "../../autopi.net.boundaries.json";
+                if (System.IO.File.Exists(geoFenceFile))
+                {
+                    geoFences = JsonConvert.DeserializeObject<IReadOnlyCollection<Boundary>>(System.IO.File.ReadAllText(geoFenceFile));
+                    return geoFences;
+                }
+            }
+            catch
+            {
+
+            }
+            return null;
 
         }
 

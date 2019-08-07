@@ -67,6 +67,19 @@ namespace autopi.net.console
                     {
                         Console.WriteLine("\tVehicle Call Name:{0}, Vin:{1}", dongle.Vehicle.CallName, dongle.Vehicle.Vin);
                     }
+                    Console.WriteLine("Attempting to retreive the recent stats");
+                    var recentStats = await logBookManager.GetRecentStats(dongle.Id);
+                    if (recentStats != null)
+                    {
+                        Console.WriteLine("Recent Status:\n\tLast Comm:{0}\n\tVoltage:{1} at {2}\n\tVoltage Level:{3} at {4}\n\t",
+                        recentStats.LatestCom,
+                        recentStats.Voltage,
+                        recentStats.VoltageTs,
+                        recentStats.VoltageLevel,
+                        recentStats.VoltageLevelTs
+                        );
+                    }
+
                     Console.WriteLine("Attempting to retreive the list of trips");
                     var trips = await logBookManager.GetTrips(dongle.Id);
                     if (trips == null)

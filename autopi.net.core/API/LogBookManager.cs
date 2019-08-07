@@ -19,9 +19,14 @@ namespace autopi.net.core.API
             this._logger = logger;
         }
 
-        public async Task<IReadOnlyCollection<GetTripsResponse>> GetTrips(System.Guid device, string ordering = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IReadOnlyCollection<GetTripsResponse>> GetTrips(System.Guid device, string ordering = "-start_time_utc", DateTimeOffset? start = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await _httpClient.GetAsync("/logbook/trips/?device=" + device.ToString());
+            if (string.IsNullOrEmpty(ordering)) ordering = "-start_time_utc";
+            if (start == null || start >= DateTimeOffset.UtcNow) start = DateTimeOffset.UtcNow.AddDays(-1);
+
+            var result = await _httpClient.GetAsync(
+                string.Format("/logbook/trips/?device={0}&ordering={1}&start_time_utc__gte={2}", device.ToString(), ordering, start?.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"))
+                );
             var content = await result.Content.ReadAsStringAsync();
             _logger.Info("Get Trips API Response:{0}", content);
 
@@ -39,10 +44,10 @@ namespace autopi.net.core.API
         //     return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
         // }
 
-        public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRead(System.Guid device, DateTime from_utc, string field_type = "primitive", string field = "event.vehicle.battery.level", CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRead(System.Guid device, DateTimeOffset from, string field_type = "primitive", string field = "event.vehicle.battery.level", CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (from_utc == null) from_utc = DateTime.Now.AddDays(-1);
-            var result = await _httpClient.GetAsync(string.Format("/logbook/storage/read/?device_id={0}&from_utc={1}&field_type={2}&field={3}", device, from_utc.ToString("yyyy-MM-ddThh:mm:ss"), field_type, field));
+            if (from == null) from = DateTimeOffset.UtcNow.AddDays(-1);
+            var result = await _httpClient.GetAsync(string.Format("/logbook/storage/read/?device_id={0}&from_utc={1}&field_type={2}&field={3}", device, from.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"), field_type, field));
             var content = await result.Content.ReadAsStringAsync();
             _logger.Info("Get Raw LogBook API Response:{0}", content);
 
@@ -53,10 +58,10 @@ namespace autopi.net.core.API
             }
             return pfResponse;
         }
-        public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRaw(System.Guid device, DateTime from_utc, string data_type = "event.vehicle.battery.level", string field = "event.vehicle.battery.level", CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRaw(System.Guid device, DateTimeOffset from, string data_type = "event.vehicle.battery.level", string field = "event.vehicle.battery.level", CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (from_utc == null) from_utc = DateTime.Now.AddDays(-1);
-            var result = await _httpClient.GetAsync(string.Format("/logbook/storage/raw/?device_id={0}&data_type={2}", device, from_utc.ToString("yyyy-MM-ddThh:mm:ss"), data_type, field));
+            if (from == null) from = DateTimeOffset.UtcNow.AddDays(-1);
+            var result = await _httpClient.GetAsync(string.Format("/logbook/storage/raw/?device_id={0}&data_type={2}", device, from.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"), data_type, field));
             //var result = await _httpClient.GetAsync(string.Format("/logbook/storage/raw/?device_id={0}&from_utc={1}&field_type={2}&field={3}", device, from_utc.ToString("yyyy-MM-ddThh:mm:ss"), field_type, field));
             var content = await result.Content.ReadAsStringAsync();
             _logger.Info("Get Raw LogBook API Response:{0}", content);
@@ -83,12 +88,29 @@ namespace autopi.net.core.API
             if (end == null || end >= DateTimeOffset.UtcNow) end = DateTimeOffset.UtcNow;
 
             var result = await _httpClient.GetAsync(
-                string.Format("/logbook/storage/data/?type={0}&key={1}&device_id={2}&start_utc={3}&end_utc={4}", type, key, deviceId, start, end)
+                string.Format("/logbook/storage/data/?type={0}&key={1}&device_id={2}&start_utc={3}&end_utc={4}", type, key, deviceId, start.Value.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"), end.Value.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"))
             );
             var content = await result.Content.ReadAsStringAsync();
             _logger.Info("Get LogBook Storage Data API Response:{0}", content);
             return JsonConvert.DeserializeObject<IReadOnlyCollection<StorageDataResponse>>(content);
         }
+
+        public async Task<RecentStatusResponse> GetRecentStats(Guid deviceId, DateTimeOffset? start = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null || start >= DateTimeOffset.UtcNow) start = DateTimeOffset.UtcNow.AddDays(-1);
+
+            var result = await _httpClient.GetAsync(
+                string.Format(
+                        "/logbook/recent_stats/?device_id={0}&from_timestamp={1}",
+                        deviceId,
+                        start.Value.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss")
+                    )
+            );
+            var content = await result.Content.ReadAsStringAsync();
+            _logger.Info("Get LogBook Storage Data API Response:{0}", content);
+            return JsonConvert.DeserializeObject<RecentStatusResponse>(content);
+        }
+
 
     }
     public enum AutoPiEvents

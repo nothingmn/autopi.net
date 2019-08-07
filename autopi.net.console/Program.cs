@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using autopi.net.core;
 using autopi.net.core.API;
 using autopi.net.core.auth;
 using autopi.net.core.auth.API;
 using autopi.net.core.Models;
+using autopi.net.core.services;
 using autopi.net.core.tags;
 using Newtonsoft.Json;
 
@@ -14,6 +16,7 @@ namespace autopi.net.console
     {
         static async Task Main(string[] args)
         {
+            TestPoly();
             var startup = new Startup();
             await startup.Initialize();
             var metaDataStorage = startup.MetaDataStorage;
@@ -110,5 +113,22 @@ namespace autopi.net.console
 
             }
         }
+        static void TestPoly()
+        {
+            var fence = new List<Location>() {
+                new Location { Lat = 0, Lon = 0},
+                new Location { Lat = 10, Lon = 0},
+                new Location { Lat = 10, Lon = 10},
+                new Location { Lat = 0, Lon = 10},
+            };
+            var pointInFence = new core.Models.Location() { Lat = 5, Lon = 5 };
+            var pointOutOfFence = new Location() { Lat = 50, Lon = 5 };
+
+            var geofenceService = new PolygonGeoFence();
+            var contains = geofenceService.PolyContainsPoint(fence, pointInFence);
+            var NotContains = geofenceService.PolyContainsPoint(fence, pointOutOfFence);
+
+        }
+
     }
 }

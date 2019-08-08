@@ -6,6 +6,7 @@ namespace autopi.net.core.Models
     public partial class PrimitiveFieldsResponse
     {
         public string Field { get; set; }
+
         [JsonProperty("max_ts")]
         public double MaxTs { get; set; }
 

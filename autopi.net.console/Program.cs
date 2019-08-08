@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using autopi.net.core;
 using autopi.net.core.API;
@@ -17,10 +18,6 @@ namespace autopi.net.console
 
         static async Task Main(string[] args)
         {
-            var p = new AutoPiApp();
-            p.Main(args);
-            return;
-
             var geoFences = TestPoly();
             var fenceService = new PolygonGeoFence();
             var startup = new Startup();
@@ -49,6 +46,7 @@ namespace autopi.net.console
             {
                 Console.WriteLine("Login successfull!");
                 var logBookManager = new LogBookManager(AutoPiApiClient.Client, logger);
+                var automationManager = new AutomationManager(AutoPiApiClient.Client, logger);
 
                 Console.WriteLine("Attempting to retreive the list logbook fields");
                 var fields = await logBookManager.GetStorageFields();
@@ -56,6 +54,15 @@ namespace autopi.net.console
                 {
                     Console.WriteLine("{1} - {0}", field.Field, field.Type);
                 }
+
+                Console.WriteLine("Attempting to retreive the list automation fields");
+                var automationFields = await automationManager.GetAutomationFields();
+                foreach (var field in automationFields)
+                {
+                    Console.WriteLine("{1} - {0}", field.Field, field.Type);
+                }
+
+
 
                 Console.WriteLine("Attempting to retreive the list of dongles");
 
@@ -71,11 +78,23 @@ namespace autopi.net.console
                 foreach (var dongle in dongles)
                 {
 
+
                     Console.WriteLine("Call Name:{0}, Display:{1}, Last Communication:{2}", dongle.CallName, dongle.Display, dongle.LastCommunication);
                     if (dongle.Vehicle != null)
                     {
                         Console.WriteLine("\tVehicle Call Name:{0}, Vin:{1}", dongle.Vehicle.CallName, dongle.Vehicle.Vin);
                     }
+                    Console.WriteLine("Attempting to retreive the recent events");
+                    var events = await logBookManager.GetEvents(dongle.Id);
+                    if (events != null && events.Results != null && events.Count > 0)
+                    {
+                        var firstEvent = events.Results.FirstOrDefault();
+                        Console.WriteLine("{3} {0} {1} {2}", firstEvent.Area, firstEvent.Event, firstEvent.Tag, firstEvent.Ts);
+                    }
+                    Console.WriteLine("Attempting to retreive the most recent position");
+                    var position = await logBookManager.GetMostRecentPosition(dongle.Id);
+                    Console.WriteLine("{0} {1} {2}", position.Ts, position.Location?.Lat, position.Location?.Lon);
+
                     Console.WriteLine("Attempting to retreive the recent stats");
                     var recentStats = await logBookManager.GetRecentStats(dongle.Id);
                     if (recentStats != null)
@@ -90,7 +109,7 @@ namespace autopi.net.console
                     }
 
                     Console.WriteLine("Attempting to retreive the list of trips");
-                    var trips = await logBookManager.GetTrips(dongle.Id);
+                    var trips = await logBookManager.GetTrips(dongle.Id, start: DateTime.UtcNow.AddHours(-1));
                     if (trips == null)
                     {
                         Console.WriteLine("No trips were found for this device.");
@@ -132,6 +151,10 @@ namespace autopi.net.console
                     //var readFuelLevel = await logBookManager.GetStorageRead(dongle.Id, DateTime.Now.AddHours(-24), field: "obd.fuel_level.value");
                     //var raw = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24));
                     //var position = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24), field: "track.pos.loc");
+                    string fld = "obd.bat.level";
+                    var rawFuelLevel = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24), field: fld);
+                    var readFuelLevel = await logBookManager.GetStorageRead(dongle.Id, DateTime.Now.AddHours(-24), field: "obd.fuel_level.value");
+
 
                 }
 

@@ -9,7 +9,4 @@
     <ItemGroup>
         <ProjectReference Include="..\autopi.net.core\autopi.net.core.csproj" />
     </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="Terminal.Gui" Version="0.24.0" />
-    </ItemGroup>
 </Project>

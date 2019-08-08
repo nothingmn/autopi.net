@@ -22,13 +22,18 @@ namespace autopi.net.core.API
         public async Task<IReadOnlyCollection<GetTripsResponse>> GetTrips(System.Guid device, string ordering = "-start_time_utc", DateTimeOffset? start = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (string.IsNullOrEmpty(ordering)) ordering = "-start_time_utc";
-            if (start == null || start >= DateTimeOffset.UtcNow) start = DateTimeOffset.UtcNow.AddDays(-1);
+            if (start == null || start >= DateTimeOffset.UtcNow) start = DateTimeOffset.UtcNow.AddYears(-2);
 
             var result = await _httpClient.GetAsync(
                 string.Format("/logbook/trips/?device={0}&ordering={1}&start_time_utc__gte={2}", device.ToString(), ordering, start?.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"))
                 );
+
             var content = await result.Content.ReadAsStringAsync();
-            //_logger.Info("Get Trips API Response:{0}", content);
+
+            if (content.Contains(":[]"))
+            {
+                return null;
+            }
 
             return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
         }
@@ -50,6 +55,10 @@ namespace autopi.net.core.API
             var result = await _httpClient.GetAsync(string.Format("/logbook/storage/read/?device_id={0}&from_utc={1}&field_type={2}&field={3}", device, from.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"), field_type, field));
             var content = await result.Content.ReadAsStringAsync();
             //_logger.Info("Get Raw LogBook API Response:{0}", content);
+            if (content.Contains(":[]"))
+            {
+                return null;
+            }
 
             var pfResponse = JsonConvert.DeserializeObject<IReadOnlyCollection<PrimitiveFieldsResponse>>(content);
             foreach (var pf in pfResponse)
@@ -66,6 +75,11 @@ namespace autopi.net.core.API
             var content = await result.Content.ReadAsStringAsync();
             //_logger.Info("Get Raw LogBook API Response:{0}", content);
 
+            if (content.Contains(":[]"))
+            {
+                return null;
+            }
+
             var pfResponse = JsonConvert.DeserializeObject<IReadOnlyCollection<PrimitiveFieldsResponse>>(content);
             foreach (var pf in pfResponse)
             {
@@ -77,6 +91,11 @@ namespace autopi.net.core.API
         {
             var result = await _httpClient.GetAsync("/logbook/storage/fields/");
             var content = await result.Content.ReadAsStringAsync();
+            if (content.Contains(":[]"))
+            {
+                return null;
+            }
+
             //_logger.Info("Get LogBook Storage Fields API Response:{0}", content);
             return JsonConvert.DeserializeObject<IReadOnlyCollection<StorageField>>(content);
         }
@@ -111,6 +130,35 @@ namespace autopi.net.core.API
             return JsonConvert.DeserializeObject<RecentStatusResponse>(content);
         }
 
+
+        public async Task<LogBookEventsResponse> GetEvents(Guid deviceId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var result = await _httpClient.GetAsync(
+                string.Format(
+                        "/logbook/events/?device_id={0}",
+                        deviceId
+                    )
+            );
+            var content = await result.Content.ReadAsStringAsync();
+            //_logger.Info("Get LogBook Events API Response:{0}", content);
+            return LogBookEventsResponse.FromJson(content);
+        }
+
+        public async Task<MostRecentPositionResponse> GetMostRecentPosition(Guid deviceId, DateTimeOffset? start = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null || start >= DateTimeOffset.UtcNow) start = DateTimeOffset.UtcNow.AddDays(-1);
+
+            var result = await _httpClient.GetAsync(
+                string.Format(
+                        "/logbook/most_recent_position/?device_id={0}&from_timestamp={1}",
+                        deviceId,
+                        start.Value.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss")
+                    )
+            );
+            var content = await result.Content.ReadAsStringAsync();
+            //_logger.Info("Get LogBook Storage Data API Response:{0}", content);
+            return JsonConvert.DeserializeObject<MostRecentPositionResponse>(content);
+        }
 
     }
     public enum AutoPiEvents

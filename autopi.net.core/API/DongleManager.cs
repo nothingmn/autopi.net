@@ -29,8 +29,6 @@ namespace autopi.net.core.API
             _logger.Info("Get Dongles API Response:{0}", content);
 
             return JsonConvert.DeserializeObject<IReadOnlyCollection<GetDongleResponse>>(content);
-
-
         }
     }
 }

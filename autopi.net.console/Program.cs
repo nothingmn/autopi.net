@@ -14,8 +14,13 @@ namespace autopi.net.console
 {
     class Program
     {
+
         static async Task Main(string[] args)
         {
+            var p = new AutoPiApp();
+            p.Main(args);
+            return;
+
             var geoFences = TestPoly();
             var fenceService = new PolygonGeoFence();
             var startup = new Startup();
@@ -101,16 +106,22 @@ namespace autopi.net.console
                         }
 
                         var tripDataPoints = await logBookManager.GetStorageData(dongle.Id, trip.StartTimeUtc, trip.EndTimeUtc);
+                        var existingTags = await metaDataStorage.GetTagsForEntity(trip.Id);
+                        if (existingTags == null) existingTags = new List<string>();
                         if (tripDataPoints != null)
                         {
                             foreach (var point in tripDataPoints)
                             {
                                 foreach (var fence in geoFences)
                                 {
-                                    if (fenceService.PolyContainsPoint(fence, point.Location))
+                                    if (!existingTags.Contains(fence.Name))
                                     {
-                                        Console.WriteLine("Geofence triggered: Where:{0} (From:{1} To:{2})", fence.Name, trip.StartDisplay, trip.EndDisplay);
-                                        await metaDataStorage.TagEntity(trip.Id, fence.Name);
+                                        if (fenceService.PolyContainsPoint(fence, point.Location))
+                                        {
+                                            Console.WriteLine("--->Geofence triggered: Where:{0} (From:{1} To:{2})", fence.Name, trip.StartDisplay, trip.EndDisplay);
+                                            await metaDataStorage.TagEntity(trip.Id, fence.Name);
+                                            existingTags.Add(fence.Name);
+                                        }
                                     }
                                 }
                             }

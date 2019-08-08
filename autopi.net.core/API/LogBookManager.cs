@@ -38,17 +38,6 @@ namespace autopi.net.core.API
             return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
         }
 
-        ///Unknown : "dataType" field.!  
-        //What are the possible values?
-        // public async Task<IReadOnlyCollection<GetTripsResponse>> GetRaw(System.Guid device, string dataType = "system/power/on", CancellationToken cancellationToken = default(CancellationToken))
-        // {
-        //     var result = await _httpClient.GetAsync(string.Format("/logbook/raw/?device_id={0}&data_type={1}", device, dataType));
-        //     var content = await result.Content.ReadAsStringAsync();
-        //     _logger.Info("Get Raw LogBook API Response:{0}", content);
-
-        //     return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
-        // }
-
         public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRead(System.Guid device, DateTimeOffset from, string field_type = "primitive", string field = "event.vehicle.battery.level", CancellationToken cancellationToken = default(CancellationToken))
         {
             if (from == null) from = DateTimeOffset.UtcNow.AddDays(-1);
@@ -159,11 +148,6 @@ namespace autopi.net.core.API
             //_logger.Info("Get LogBook Storage Data API Response:{0}", content);
             return JsonConvert.DeserializeObject<MostRecentPositionResponse>(content);
         }
-
-    }
-    public enum AutoPiEvents
-    {
-        event_system_power_reason,
 
     }
 }

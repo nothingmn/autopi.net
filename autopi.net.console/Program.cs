@@ -17,10 +17,6 @@ namespace autopi.net.console
 
         static async Task Main(string[] args)
         {
-            var p = new AutoPiApp();
-            p.Main(args);
-            return;
-
             var geoFences = TestPoly();
             var fenceService = new PolygonGeoFence();
             var startup = new Startup();

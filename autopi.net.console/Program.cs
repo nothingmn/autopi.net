@@ -134,7 +134,7 @@ namespace autopi.net.console
 
                         var csv = new CSVExporter();
                         csv.ExportAlignedTripData($@"C:\Users\robch\Desktop\trips\{trip.Id}.csv", trip, dongle, aligned);
-                        var kml = new KMLExporter();
+                        var kml = new SimpleKMLExporter();
                         kml.ExportAlignedTripData($@"C:\Users\robch\Desktop\trips\{trip.Id}.kml", trip, dongle, aligned);
 
 

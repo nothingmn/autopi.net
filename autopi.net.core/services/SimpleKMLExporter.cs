@@ -6,7 +6,7 @@ using System.Text;
 
 namespace autopi.net.core.services
 {
-    public class KMLExporter
+    public class SimpleKMLExporter
     {
         public void ExportAlignedTripData(string filename, GetTripsResponse trip, GetDongleResponse dongle, AlignedTripData alignedTripData)
         {
@@ -14,7 +14,6 @@ namespace autopi.net.core.services
 
             string fileTemplate = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><kml xmlns=\"http://www.opengis.net/kml/2.2\"><Document><name>{name}</name><description>{description}</description><Style id=\"lineColor\"><LineStyle><color>7dff0000</color><width>4</width></LineStyle><PolyStyle><color>7dff0000</color></PolyStyle></Style>{Placemarks}</Document></kml>";
             string placemarkTemplate = "<Placemark><styleUrl>#lineColor</styleUrl><LineString><extrude>1</extrude><tessellate>1</tessellate><coordinates>{LOCATIONS}</coordinates></LineString></Placemark>";
-
 
             var item = placemarkTemplate;
             var sb = new StringBuilder();

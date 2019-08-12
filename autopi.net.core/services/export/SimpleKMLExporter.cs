@@ -4,9 +4,9 @@ using autopi.net.core.Models;
 using System.Linq;
 using System.Text;
 
-namespace autopi.net.core.services
+namespace autopi.net.core.services.export
 {
-    public class SimpleKMLExporter
+    public class SimpleKMLExporter : ITripExport
     {
         public void ExportAlignedTripData(string filename, GetTripsResponse trip, GetDongleResponse dongle, AlignedTripData alignedTripData)
         {

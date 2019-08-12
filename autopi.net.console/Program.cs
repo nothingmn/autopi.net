@@ -9,6 +9,7 @@ using autopi.net.core.auth.API;
 using autopi.net.core.Models;
 using autopi.net.core.services;
 using autopi.net.core.tags;
+using autopi.net.core.services.export;
 using Newtonsoft.Json;
 
 namespace autopi.net.console
@@ -109,7 +110,7 @@ namespace autopi.net.console
                     }
 
                     Console.WriteLine("Attempting to retreive the list of trips");
-                    var trips = await logBookManager.GetTrips(dongle.Id, start: DateTime.UtcNow.AddDays(-30));
+                    var trips = await logBookManager.GetTrips(dongle.Id, start: DateTime.UtcNow.AddDays(-365));
                     if (trips == null)
                     {
                         Console.WriteLine("No trips were found for this device.");
@@ -134,6 +135,7 @@ namespace autopi.net.console
 
                         var csv = new CSVExporter();
                         csv.ExportAlignedTripData($@"C:\Users\robch\Desktop\trips\{trip.Id}.csv", trip, dongle, aligned);
+
                         var kml = new SimpleKMLExporter();
                         kml.ExportAlignedTripData($@"C:\Users\robch\Desktop\trips\{trip.Id}.kml", trip, dongle, aligned);
 

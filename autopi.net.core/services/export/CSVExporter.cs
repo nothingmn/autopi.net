@@ -3,9 +3,9 @@ using autopi.net.core.API;
 using autopi.net.core.Models;
 using System.Linq;
 
-namespace autopi.net.core.services
+namespace autopi.net.core.services.export
 {
-    public class CSVExporter
+    public class CSVExporter : ITripExport
     {
         public void ExportAlignedTripData(string filename, GetTripsResponse trip, GetDongleResponse dongle, AlignedTripData alignedTripData)
         {

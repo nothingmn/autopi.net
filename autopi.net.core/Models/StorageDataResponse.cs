@@ -11,6 +11,9 @@ namespace autopi.net.core.Models
 
         [JsonProperty("location")]
         public Location Location { get; set; }
+
+        [JsonProperty("value")]
+        public float Value { get; set; }
     }
 
     public partial class Location

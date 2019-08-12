@@ -48,19 +48,19 @@ namespace autopi.net.console
                 var logBookManager = new LogBookManager(AutoPiApiClient.Client, logger);
                 var automationManager = new AutomationManager(AutoPiApiClient.Client, logger);
 
-                Console.WriteLine("Attempting to retreive the list logbook fields");
-                var fields = await logBookManager.GetStorageFields();
-                foreach (var field in fields)
-                {
-                    Console.WriteLine("{1} - {0}", field.Field, field.Type);
-                }
+                // Console.WriteLine("Attempting to retreive the list logbook fields");
+                // var fields = await logBookManager.GetStorageFields();
+                // foreach (var field in fields)
+                // {
+                //     Console.WriteLine("{1} - {0}", field.Field, field.Type);
+                // }
 
-                Console.WriteLine("Attempting to retreive the list automation fields");
-                var automationFields = await automationManager.GetAutomationFields();
-                foreach (var field in automationFields)
-                {
-                    Console.WriteLine("{1} - {0}", field.Field, field.Type);
-                }
+                // Console.WriteLine("Attempting to retreive the list automation fields");
+                // var automationFields = await automationManager.GetAutomationFields();
+                // foreach (var field in automationFields)
+                // {
+                //     Console.WriteLine("{1} - {0}", field.Field, field.Type);
+                // }
 
 
 
@@ -109,7 +109,7 @@ namespace autopi.net.console
                     }
 
                     Console.WriteLine("Attempting to retreive the list of trips");
-                    var trips = await logBookManager.GetTrips(dongle.Id, start: DateTime.UtcNow.AddHours(-1));
+                    var trips = await logBookManager.GetTrips(dongle.Id, start: DateTime.UtcNow.AddDays(-30));
                     if (trips == null)
                     {
                         Console.WriteLine("No trips were found for this device.");
@@ -124,36 +124,57 @@ namespace autopi.net.console
                             Console.WriteLine("\t\t\tTags:{0}", string.Join(',', tags));
                         }
 
-                        var tripDataPoints = await logBookManager.GetStorageData(dongle.Id, trip.StartTimeUtc, trip.EndTimeUtc);
-                        var existingTags = await metaDataStorage.GetTagsForEntity(trip.Id);
-                        if (existingTags == null) existingTags = new List<string>();
-                        if (tripDataPoints != null)
-                        {
-                            foreach (var point in tripDataPoints)
-                            {
-                                foreach (var fence in geoFences)
-                                {
-                                    if (!existingTags.Contains(fence.Name))
-                                    {
-                                        if (fenceService.PolyContainsPoint(fence, point.Location))
-                                        {
-                                            Console.WriteLine("--->Geofence triggered: Where:{0} (From:{1} To:{2})", fence.Name, trip.StartDisplay, trip.EndDisplay);
-                                            await metaDataStorage.TagEntity(trip.Id, fence.Name);
-                                            existingTags.Add(fence.Name);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        var aligned = await logBookManager.GetTripDataAligned(dongle.Id,
+                                                    PrimitiveDataPoints.CoolantTemp | PrimitiveDataPoints.EngineLoad |
+                                                    PrimitiveDataPoints.FuelLevel | PrimitiveDataPoints.FuelRate |
+                                                    PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
+                                                    PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
+                                                    PrimitiveDataPoints.Voltage
+                                                    , trip.StartTimeUtc, trip.EndTimeUtc, "1m");
+
+                        var csv = new CSVExporter();
+                        csv.ExportAlignedTripData($@"C:\Users\robch\Desktop\trips\{trip.Id}.csv", trip, dongle, aligned);
+                        var kml = new KMLExporter();
+                        kml.ExportAlignedTripData($@"C:\Users\robch\Desktop\trips\{trip.Id}.kml", trip, dongle, aligned);
+
+
+                        //     var tripData = await logBookManager.GetTripData(dongle.Id,
+                        //         PrimitiveDataPoints.CoolantTemp | PrimitiveDataPoints.EngineLoad |
+                        //         PrimitiveDataPoints.FuelLevel | PrimitiveDataPoints.FuelRate |
+                        //         PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
+                        //         PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
+                        //         PrimitiveDataPoints.Voltage
+                        //         , trip.StartTimeUtc, trip.EndTimeUtc, "1m");
+
+                        //     var existingTags = await metaDataStorage.GetTagsForEntity(trip.Id);
+                        //     if (existingTags == null) existingTags = new List<string>();
+                        //     if (tripData.Position != null)
+                        //     {
+                        //         foreach (var point in tripData.Position)
+                        //         {
+                        //             foreach (var fence in geoFences)
+                        //             {
+                        //                 if (!existingTags.Contains(fence.Name))
+                        //                 {
+                        //                     if (fenceService.PolyContainsPoint(fence, point.Location))
+                        //                     {
+                        //                         Console.WriteLine("--->Geofence triggered: Where:{0} (From:{1} To:{2})", fence.Name, trip.StartDisplay, trip.EndDisplay);
+                        //                         await metaDataStorage.TagEntity(trip.Id, fence.Name);
+                        //                         existingTags.Add(fence.Name);
+                        //                     }
+                        //                 }
+                        //             }
+                        //         }
+                        //     }
 
                     }
 
                     //var readFuelLevel = await logBookManager.GetStorageRead(dongle.Id, DateTime.Now.AddHours(-24), field: "obd.fuel_level.value");
                     //var raw = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24));
                     //var position = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24), field: "track.pos.loc");
-                    string fld = "obd.bat.level";
-                    var rawFuelLevel = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24), field: fld);
-                    var readFuelLevel = await logBookManager.GetStorageRead(dongle.Id, DateTime.Now.AddHours(-24), field: "obd.fuel_level.value");
+                    // string fld = "obd.bat.level";
+                    // var rawFuelLevel = await logBookManager.GetStorageRaw(dongle.Id, DateTime.Now.AddHours(-24), field: fld);
+                    // var readFuelLevel = await logBookManager.GetStorageRead(dongle.Id, DateTime.Now.AddHours(-24), field: "obd.fuel_level.value");
 
 
                 }

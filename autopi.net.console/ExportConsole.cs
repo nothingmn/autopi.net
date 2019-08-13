@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using autopi.net.core;
 using autopi.net.core.API;
@@ -81,24 +83,26 @@ namespace autopi.net.console
                 {
                     Console.WriteLine($"Selected Dongle: {dongle.Id} - {dongle.CallName} - {dongle.Display}");
 
-                    var trip = await ShowTrips(dongle, logBookManager);
-                    if (trip != null)
+                    var trips = await ShowTrips(dongle, logBookManager);
+                    if (trips != null)
                     {
-                        Console.WriteLine($"Selected Trip: {trip.Id} - {trip.StartDisplay} to {trip.EndDisplay} at {trip.StartTimeUtc.ToLocalTime()}");
                         var exporter = SelectTripExporter();
-                        Console.WriteLine("Preparing data for export");
-                        var aligned = await logBookManager.GetTripDataAligned(dongle.Id,
-                                 PrimitiveDataPoints.CoolantTemp | PrimitiveDataPoints.EngineLoad |
-                                 PrimitiveDataPoints.FuelLevel | PrimitiveDataPoints.FuelRate |
-                                 PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
-                                 PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
-                                 PrimitiveDataPoints.Voltage
-                                 , trip.StartTimeUtc, trip.EndTimeUtc, "1s");
+                        foreach (var trip in trips)
+                        {
+                            Console.WriteLine($"Selected Trip: {trip.Id} - {trip.StartDisplay} to {trip.EndDisplay} at {trip.StartTimeUtc.ToLocalTime()}");
+                            Console.WriteLine("Preparing data for export");
+                            var aligned = await logBookManager.GetTripDataAligned(dongle.Id,
+                                     PrimitiveDataPoints.CoolantTemp | PrimitiveDataPoints.EngineLoad |
+                                     PrimitiveDataPoints.FuelLevel | PrimitiveDataPoints.FuelRate |
+                                     PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
+                                     PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
+                                     PrimitiveDataPoints.Voltage
+                                     , trip.StartTimeUtc, trip.EndTimeUtc, "1s");
 
-                        var path = System.IO.Path.Combine(System.Environment.CurrentDirectory, $"{trip.Id}.{exporter.Extension}");
-                        exporter.ExportAlignedTripData(path, trip, dongle, aligned);
-                        Console.WriteLine($"Trip data exported to:{path}");
-
+                            var path = System.IO.Path.Combine(System.Environment.CurrentDirectory, $"{trip.Id}.{exporter.Extension}");
+                            exporter.ExportAlignedTripData(path, trip, dongle, aligned);
+                            Console.WriteLine($"Trip data exported to:{path}");
+                        }
                     }
                 }
                 Console.WriteLine("Hit enter to go again, 'q' to quit");
@@ -127,7 +131,7 @@ namespace autopi.net.console
             return exporter;
         }
 
-        private async Task<GetTripsResponse> ShowTrips(GetDongleResponse dongle, LogBookManager logBookManager)
+        private async Task<IList<GetTripsResponse>> ShowTrips(GetDongleResponse dongle, LogBookManager logBookManager)
         {
             Console.WriteLine("Attempting to retreive the list of trips");
             var trips = await logBookManager.GetTrips(dongle.Id, start: DateTime.UtcNow.AddDays(-365));
@@ -140,13 +144,19 @@ namespace autopi.net.console
             {
                 Console.WriteLine($"{trip.Id} - {trip.StartDisplay} to {trip.EndDisplay} at {trip.StartTimeUtc.ToLocalTime()}");
             }
-            Console.Write("Choose a Trip:");
+            Console.Write("Choose a Trip (use 'all' for all):");
             var input = Console.ReadLine();
+
+            if (string.Equals(input, "all", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return trips.ToList();
+            }
+
             foreach (var t in trips)
             {
                 if (t.Id.ToString().StartsWith(input))
                 {
-                    return t;
+                    return new List<GetTripsResponse>() { t };
                 }
             }
             return null;

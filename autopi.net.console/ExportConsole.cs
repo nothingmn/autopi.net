@@ -93,8 +93,7 @@ namespace autopi.net.console
                                  PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
                                  PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
                                  PrimitiveDataPoints.Voltage
-                                 , trip.StartTimeUtc, trip.EndTimeUtc, "1m");
-
+                                 , trip.StartTimeUtc, trip.EndTimeUtc, "1s");
 
                         var path = System.IO.Path.Combine(System.Environment.CurrentDirectory, $"{trip.Id}.{exporter.Extension}");
                         exporter.ExportAlignedTripData(path, trip, dongle, aligned);

@@ -21,13 +21,15 @@ namespace autopi.net.core.services.export
             var sb = new StringBuilder();
             foreach (var a in alignedTripData.AlignedDataPoints.OrderBy(f => f.Timestamp))
             {
-                //item = item.Replace("{description}", desc);
-                sb.Append($"{a.Position?.Lon},{a.Position?.Lat},0\n");
+                if (a.Position != null && a.Position.Lat != 0 && a.Position.Lon != 0)
+                {
+                    sb.Append($"{a.Position?.Lon},{a.Position?.Lat},0\n");
+                }
             }
             item = item.Replace("{LOCATIONS}", sb.ToString());
 
             var full = fileTemplate.Replace("{name}", $"{trip.StartDisplay} to {trip.EndDisplay} at {trip.StartTimeUtc.ToLocalTime().ToString()}");
-            full = full.Replace("{description}", $"Distance:{trip.DistanceKm}km\nDuration:{trip.Duration}\nStart:{trip.StartDisplay} at {trip.StartTimeUtc.ToLocalTime()}\nEnd:{trip.EndDisplay} at {trip.EndTimeUtc.ToLocalTime()}\nDuration:{trip.Duration}");
+            full = full.Replace("{description}", $"Distance:{trip.DistanceKm.ToString("00.00")}km<br />Duration:{trip.Duration}<br />Start:{trip.StartDisplay} at {trip.StartTimeUtc.ToLocalTime()}<br />End:{trip.EndDisplay} at {trip.EndTimeUtc.ToLocalTime()}<br />Duration:{trip.Duration}<br />");
             full = full.Replace("{Placemarks}", item);
 
             System.IO.File.WriteAllText(filename, full);

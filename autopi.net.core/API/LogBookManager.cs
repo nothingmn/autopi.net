@@ -293,7 +293,7 @@ namespace autopi.net.core.API
         {
             if (first == null) first = new List<TripDataPoint>();
 
-            int threshold = 30;
+            int threshold = 20;
             foreach (var newPoint in second)
             {
                 var existing = (from f in first where Math.Abs((f.Timestamp - newPoint.Ts).TotalSeconds) < threshold select f)?.FirstOrDefault();

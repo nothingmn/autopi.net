@@ -9,4 +9,7 @@
     <ItemGroup>
         <ProjectReference Include="..\autopi.net.core\autopi.net.core.csproj" />
     </ItemGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <LangVersion>7.1</LangVersion>
+    </PropertyGroup>
 </Project>

@@ -14,15 +14,22 @@ using Newtonsoft.Json;
 
 namespace autopi.net.console
 {
+
     class Program
     {
 
         static async Task Main(string[] args)
         {
-            var geoFences = TestPoly();
-            var fenceService = new PolygonGeoFence();
+            var export = new ExportConsole();
+            await export.Main(args);
+            return;
+
             var startup = new Startup();
             await startup.Initialize();
+
+            var geoFences = TestPoly();
+            var fenceService = new PolygonGeoFence();
+
             var metaDataStorage = startup.MetaDataStorage;
             var logger = startup.Logger;
 

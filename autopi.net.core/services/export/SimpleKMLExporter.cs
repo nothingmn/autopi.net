@@ -8,6 +8,8 @@ namespace autopi.net.core.services.export
 {
     public class SimpleKMLExporter : ITripExport
     {
+        public string Extension { get; set; } = "kml";
+
         public void ExportAlignedTripData(string filename, GetTripsResponse trip, GetDongleResponse dongle, AlignedTripData alignedTripData)
         {
             if (alignedTripData.AlignedDataPoints.Count <= 0) return;

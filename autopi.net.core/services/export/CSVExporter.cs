@@ -19,6 +19,7 @@ namespace autopi.net.core.services.export
 
             System.IO.File.WriteAllText(filename, sb.ToString());
         }
+        public string Extension { get; set; } = "csv";
 
     }
 }

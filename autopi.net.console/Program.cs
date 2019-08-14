@@ -20,9 +20,9 @@ namespace autopi.net.console
 
         static async Task Main(string[] args)
         {
-            var export = new ExportConsole();
-            await export.Main(args);
-            return;
+            // var export = new ExportConsole();
+            // await export.Main(args);
+            // return;
 
             var startup = new Startup();
             await startup.Initialize();
@@ -86,7 +86,6 @@ namespace autopi.net.console
                 foreach (var dongle in dongles)
                 {
 
-
                     Console.WriteLine("Call Name:{0}, Display:{1}, Last Communication:{2}", dongle.CallName, dongle.Display, dongle.LastCommunication);
                     if (dongle.Vehicle != null)
                     {
@@ -137,7 +136,8 @@ namespace autopi.net.console
                                                     PrimitiveDataPoints.FuelLevel | PrimitiveDataPoints.FuelRate |
                                                     PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
                                                     PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
-                                                    PrimitiveDataPoints.Voltage
+                                                    PrimitiveDataPoints.Voltage | PrimitiveDataPoints.Altitude |
+                                                    PrimitiveDataPoints.AccelerometerX | PrimitiveDataPoints.AccelerometerY | PrimitiveDataPoints.AccelerometerZ
                                                     , trip.StartTimeUtc, trip.EndTimeUtc, "1m");
 
                         var csv = new CSVExporter();

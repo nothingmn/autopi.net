@@ -96,7 +96,8 @@ namespace autopi.net.console
                                      PrimitiveDataPoints.FuelLevel | PrimitiveDataPoints.FuelRate |
                                      PrimitiveDataPoints.IntakeTemp | PrimitiveDataPoints.Position |
                                      PrimitiveDataPoints.RpiTemperature | PrimitiveDataPoints.Speed |
-                                     PrimitiveDataPoints.Voltage
+                                     PrimitiveDataPoints.Voltage | PrimitiveDataPoints.Altitude |
+                                     PrimitiveDataPoints.AccelerometerX | PrimitiveDataPoints.AccelerometerY | PrimitiveDataPoints.AccelerometerZ
                                      , trip.StartTimeUtc, trip.EndTimeUtc, "1s");
 
                             var path = System.IO.Path.Combine(System.Environment.CurrentDirectory, $"{trip.Id}.{exporter.Extension}");

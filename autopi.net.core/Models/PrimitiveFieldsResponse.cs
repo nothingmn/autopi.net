@@ -14,6 +14,6 @@ namespace autopi.net.core.Models
         public DateTimeOffset Ts { get; set; }
 
         [JsonProperty("value")]
-        public double Value { get; set; }
+        public float Value { get; set; }
     }
 }

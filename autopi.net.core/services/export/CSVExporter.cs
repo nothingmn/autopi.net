@@ -11,10 +11,10 @@ namespace autopi.net.core.services.export
         {
 
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            sb.Append("Timestamp,CoolantTemp,EngineLoad,FuelLevel,FuelRate,IntakeTemp,Lat,Lon,RpiTemperature,Speed,Voltage\r\n");
+            sb.Append("Timestamp,CoolantTemp,EngineLoad,FuelLevel,FuelRate,IntakeTemp,Lat,Lon,Altitude,RpiTemperature,Speed,Voltage,AccelerometerX,AccelerometerY,AccelerometerZ\r\n");
             foreach (var a in alignedTripData.AlignedDataPoints.OrderBy(f => f.Timestamp))
             {
-                sb.Append(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\r\n", a.Timestamp, a.CoolantTemp, a.EngineLoad, a.FuelLevel, a.FuelRate, a.IntakeTemp, a.Position?.Lat, a.Position?.Lon, a.RpiTemperature, a.Speed, a.Voltage));
+                sb.Append($"{a.Timestamp},{a.CoolantTemp},{a.EngineLoad},{a.FuelLevel},{a.FuelRate},{a.IntakeTemp},{a.Position?.Lat},{a.Position?.Lon},{a.Altitude},{a.RpiTemperature},{a.Speed},{a.Voltage},{a.AccelerometerX},{a.AccelerometerY},{a.AccelerometerZ}\r\n");
             }
 
             System.IO.File.WriteAllText(filename, sb.ToString());

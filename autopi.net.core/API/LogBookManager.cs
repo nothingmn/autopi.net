@@ -39,10 +39,10 @@ namespace autopi.net.core.API
             return JsonConvert.DeserializeObject<IReadOnlyCollection<GetTripsResponse>>(content);
         }
 
-        public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRead(System.Guid device, DateTimeOffset from, string field_type = "primitive", string field = "event.vehicle.battery.level", CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IReadOnlyCollection<PrimitiveFieldsResponse>> GetStorageRead(System.Guid device, DateTimeOffset start, DateTimeOffset end, string field_type = "primitive", string field = "event.vehicle.battery.level", string interval = "1s", CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (from == null) from = DateTimeOffset.UtcNow.AddDays(-1);
-            var result = await _httpClient.GetAsync(string.Format("/logbook/storage/read/?device_id={0}&from_utc={1}&field_type={2}&field={3}", device, from.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"), field_type, field));
+            if (start == null) start = DateTimeOffset.UtcNow.AddDays(-1);
+            var result = await _httpClient.GetAsync(string.Format("/logbook/storage/read/?device_id={0}&from_utc={1}&field_type={2}&field={3}&interval={4}&end_utc={5}", device, start.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss"), field_type, field, interval, end.ToUniversalTime().ToString("yyyy-MM-ddThh:mm:ss")));
             var content = await result.Content.ReadAsStringAsync();
             //_logger.Info("Get Raw LogBook API Response:{0}", content);
             if (content.Contains(":[]"))
@@ -158,6 +158,63 @@ namespace autopi.net.core.API
         {
             return await GetStorageData(deviceId, start, end, type: "primitive", key: "speed", interval: interval, cancellationToken);
         }
+        public async Task<IReadOnlyCollection<StorageDataResponse>> GetAccelerometerXData(Guid deviceId, DateTimeOffset? start = null, DateTimeOffset? end = null, string interval = "1m", CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null) start = DateTimeOffset.UtcNow.AddDays(-1);
+            if (end == null) end = DateTimeOffset.UtcNow;
+            var x = await GetStorageRead(deviceId, start.Value, end.Value, "primitive", field: "acc.xyz.x", interval: interval, cancellationToken);
+
+            return (from d in x
+                    select new StorageDataResponse()
+                    {
+                        Value = d.Value,
+                        Ts = d.Ts
+                    }).ToList<StorageDataResponse>(); ;
+
+        }
+        public async Task<IReadOnlyCollection<StorageDataResponse>> GetAccelerometerYData(Guid deviceId, DateTimeOffset? start = null, DateTimeOffset? end = null, string interval = "1m", CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null) start = DateTimeOffset.UtcNow.AddDays(-1);
+            if (end == null) end = DateTimeOffset.UtcNow;
+            var x = await GetStorageRead(deviceId, start.Value, end.Value, "primitive", field: "acc.xyz.y", interval: interval, cancellationToken);
+
+            return (from d in x
+                    select new StorageDataResponse()
+                    {
+                        Value = d.Value,
+                        Ts = d.Ts
+                    }).ToList<StorageDataResponse>(); ;
+        }
+
+
+        public async Task<IReadOnlyCollection<StorageDataResponse>> GetAccelerometerZData(Guid deviceId, DateTimeOffset? start = null, DateTimeOffset? end = null, string interval = "1m", CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null) start = DateTimeOffset.UtcNow.AddDays(-1);
+            if (end == null) end = DateTimeOffset.UtcNow;
+            var x = await GetStorageRead(deviceId, start.Value, end.Value, "primitive", field: "acc.xyz.z", interval: interval, cancellationToken);
+
+            return (from d in x
+                    select new StorageDataResponse()
+                    {
+                        Value = d.Value,
+                        Ts = d.Ts
+                    }).ToList<StorageDataResponse>(); ;
+
+        }
+        public async Task<IReadOnlyCollection<StorageDataResponse>> GetAltitudeData(Guid deviceId, DateTimeOffset? start = null, DateTimeOffset? end = null, string interval = "1m", CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (start == null) start = DateTimeOffset.UtcNow.AddDays(-1);
+            if (end == null) end = DateTimeOffset.UtcNow;
+            var x = await GetStorageRead(deviceId, start.Value, end.Value, "primitive", field: "track.pos.alt", interval: interval, cancellationToken);
+
+            return (from d in x
+                    select new StorageDataResponse()
+                    {
+                        Value = d.Value,
+                        Ts = d.Ts
+                    }).ToList<StorageDataResponse>(); ;
+
+        }
         public async Task<IReadOnlyCollection<StorageDataResponse>> GetEngineLoadLevelsData(Guid deviceId, DateTimeOffset? start = null, DateTimeOffset? end = null, string interval = "1m", CancellationToken cancellationToken = default(CancellationToken))
         {
             return await GetStorageData(deviceId, start, end, type: "primitive", key: "engine_load", interval: interval, cancellationToken);
@@ -235,6 +292,22 @@ namespace autopi.net.core.API
             {
                 data.Voltage = await GetVoltageData(deviceId, start, end, interval, cancellationToken);
             }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.AccelerometerX))
+            {
+                data.AccelerometerX = await GetAccelerometerXData(deviceId, start, end, interval, cancellationToken);
+            }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.AccelerometerY))
+            {
+                data.AccelerometerY = await GetAccelerometerYData(deviceId, start, end, interval, cancellationToken);
+            }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.AccelerometerZ))
+            {
+                data.AccelerometerZ = await GetAccelerometerZData(deviceId, start, end, interval, cancellationToken);
+            }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.Altitude))
+            {
+                data.Altitude = await GetAltitudeData(deviceId, start, end, interval, cancellationToken);
+            }
 
             return data;
 
@@ -286,7 +359,22 @@ namespace autopi.net.core.API
             {
                 aligned.AlignedDataPoints = AlignData(aligned.AlignedDataPoints, data.Speed, PrimitiveDataPoints.Speed);
             }
-
+            if (dataPoints.HasFlag(PrimitiveDataPoints.AccelerometerX))
+            {
+                aligned.AlignedDataPoints = AlignData(aligned.AlignedDataPoints, data.AccelerometerX, PrimitiveDataPoints.AccelerometerX);
+            }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.AccelerometerY))
+            {
+                aligned.AlignedDataPoints = AlignData(aligned.AlignedDataPoints, data.AccelerometerY, PrimitiveDataPoints.AccelerometerY);
+            }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.AccelerometerZ))
+            {
+                aligned.AlignedDataPoints = AlignData(aligned.AlignedDataPoints, data.AccelerometerZ, PrimitiveDataPoints.AccelerometerZ);
+            }
+            if (dataPoints.HasFlag(PrimitiveDataPoints.Altitude))
+            {
+                aligned.AlignedDataPoints = AlignData(aligned.AlignedDataPoints, data.Altitude, PrimitiveDataPoints.Altitude);
+            }
             return aligned;
         }
         private List<TripDataPoint> AlignData(List<TripDataPoint> first, IReadOnlyCollection<StorageDataResponse> second, PrimitiveDataPoints dataPoint)
@@ -318,6 +406,10 @@ namespace autopi.net.core.API
                     if (dataPoint == PrimitiveDataPoints.RpiTemperature) existing.RpiTemperature = newPoint.Value;
                     if (dataPoint == PrimitiveDataPoints.Speed) existing.Speed = newPoint.Value;
                     if (dataPoint == PrimitiveDataPoints.Voltage) existing.Voltage = newPoint.Value;
+                    if (dataPoint == PrimitiveDataPoints.AccelerometerX) existing.AccelerometerX = newPoint.Value;
+                    if (dataPoint == PrimitiveDataPoints.AccelerometerY) existing.AccelerometerY = newPoint.Value;
+                    if (dataPoint == PrimitiveDataPoints.AccelerometerZ) existing.AccelerometerZ = newPoint.Value;
+                    if (dataPoint == PrimitiveDataPoints.Altitude) existing.Altitude = newPoint.Value;
                 }
             }
 
@@ -348,6 +440,10 @@ namespace autopi.net.core.API
                 if (p.RpiTemperature == 0) p.RpiTemperature = last.RpiTemperature;
                 if (p.Speed == 0) p.Speed = last.Speed;
                 if (p.Voltage == 0) p.Voltage = last.Voltage;
+                if (p.AccelerometerX == 0) p.AccelerometerX = last.AccelerometerX;
+                if (p.AccelerometerY == 0) p.AccelerometerY = last.AccelerometerY;
+                if (p.AccelerometerZ == 0) p.AccelerometerZ = last.AccelerometerZ;
+                if (p.Altitude == 0) p.Altitude = last.Altitude;
 
                 last = p;
             }
@@ -376,6 +472,11 @@ namespace autopi.net.core.API
         public float FuelLevel { get; set; }
         public float FuelRate { get; set; }
         public float IntakeTemp { get; set; }
+        public float AccelerometerX { get; set; }
+        public float AccelerometerY { get; set; }
+        public float AccelerometerZ { get; set; }
+        public float Altitude { get; set; }
+
     }
     public class TripData
     {
@@ -392,6 +493,11 @@ namespace autopi.net.core.API
         public IReadOnlyCollection<StorageDataResponse> FuelLevel { get; set; }
         public IReadOnlyCollection<StorageDataResponse> FuelRate { get; set; }
         public IReadOnlyCollection<StorageDataResponse> IntakeTemp { get; set; }
+        public IReadOnlyCollection<StorageDataResponse> AccelerometerX { get; set; }
+        public IReadOnlyCollection<StorageDataResponse> AccelerometerY { get; set; }
+        public IReadOnlyCollection<StorageDataResponse> AccelerometerZ { get; set; }
+        public IReadOnlyCollection<StorageDataResponse> Altitude { get; set; }
+
     }
 
     [Flags]
@@ -405,6 +511,10 @@ namespace autopi.net.core.API
         Voltage = 32,
         FuelLevel = 64,
         FuelRate = 128,
-        IntakeTemp = 256
+        IntakeTemp = 256,
+        AccelerometerX = 512,
+        AccelerometerY = 1024,
+        AccelerometerZ = 2048,
+        Altitude = 4096
     }
 }

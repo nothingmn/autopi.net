@@ -23,7 +23,7 @@ namespace autopi.net.core.services.export
             {
                 if (a.Position != null && a.Position.Lat != 0 && a.Position.Lon != 0)
                 {
-                    sb.Append($"{a.Position?.Lon},{a.Position?.Lat},0\n");
+                    sb.Append($"{a.Position?.Lon},{a.Position?.Lat},{a.Altitude}\n");
                 }
             }
             item = item.Replace("{LOCATIONS}", sb.ToString());
